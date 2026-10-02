@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Interface Technician — 5 Stage Challenge</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,"Noto Sans Thai",sans-serif;background:linear-gradient(135deg,#061426,#0b63ce 55%,#16a0d8);min-height:100vh;color:#102033}
+.app{max-width:1100px;margin:auto;padding:18px}
+.header{background:rgba(8,24,43,.96);color:#fff;border-radius:22px;padding:20px 24px;box-shadow:0 18px 50px #0006}
+.headerTop{display:flex;justify-content:space-between;gap:15px;align-items:center}
+h1{margin:0;font-size:clamp(24px,5vw,38px)}
+.sub{color:#b9cce4;margin-top:5px}
+.stageDots{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:18px}
+.dot{height:9px;border-radius:20px;background:#33465e}
+.dot.active{background:#57d7ff}.dot.done{background:#62ffd0}
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}
+.pill{background:#17344a;padding:8px 12px;border-radius:20px;font-weight:700}
+.content{margin-top:18px;background:#f7fbff;border-radius:22px;padding:24px;min-height:500px}
+.center{text-align:center}.hidden{display:none}
+.big{font-size:68px}.btn{border:0;border-radius:12px;padding:13px 20px;font-size:16px;font-weight:800;cursor:pointer}
+.primary{background:#087cf5;color:white}.dark{background:#172b4d;color:#fff}
+.card{background:white;border:1px solid #d9e4ee;border-radius:18px;padding:22px}
+.progress{height:9px;background:#e2eaf1;border-radius:20px;overflow:hidden;margin:15px 0 22px}
+.bar{height:100%;background:#087cf5;width:0;transition:.3s}
+.q{font-size:22px;font-weight:800;line-height:1.5;margin:15px 0}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.opt,.choice,.option{border:2px solid #d8e2eb;background:#f8fafc;border-radius:12px;padding:14px;text-align:left;font-size:16px;cursor:pointer;width:100%;margin:5px 0}
+.opt:hover,.choice:hover,.option:hover{border-color:#087cf5}
+.correct{background:#e8f8ee!important;border-color:#20a363!important}
+.wrong{background:#fff0ef!important;border-color:#d64545!important}
+.feedback{margin-top:14px;padding:14px;border-radius:12px;line-height:1.65}
+.good{background:#e8f8ee;border:1px solid #9bd9b6}
+.bad{background:#fff0ef;border:1px solid #e5aaaa}
+.stageTag{display:inline-block;background:#e8f3ff;color:#07559b;border-radius:20px;padding:7px 12px;font-weight:800}
+.items{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}
+.item{background:white;border:2px solid #d8e1ea;border-radius:15px;padding:15px;text-align:center;cursor:grab}
+.item.locked{opacity:.45}.icon{font-size:30px;display:block}
+.zones{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.zone{min-height:190px;background:#fff;border:3px dashed #9fb1c3;border-radius:18px;padding:15px}
+.zone.over{border-color:#3b82f6;background:#eff6ff}
+.zone h3{margin:0 0 5px}.zone p{color:#637386}
+.drop-list{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:8px 11px;border-radius:11px;background:#e8f0f8;font-weight:650}
+.equipment{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0 18px}
+.equip{background:#e9eef5;padding:8px 11px;border-radius:10px;font-size:14px}
+.grid2{display:grid;grid-template-columns:1.5fr .8fr;gap:16px}
+.scenario{background:#10283a;color:#eef5ff;padding:16px;border-radius:13px;line-height:1.7}
+.evidence{background:#111e30;color:#eaf4ff;border-radius:18px;padding:18px}
+.log{min-height:120px;color:#b9cce4;font-size:14px;line-height:1.7}
+.status{padding:12px;border-radius:12px;background:#1b2d44;margin-top:12px}
+.story{line-height:1.7}.options4{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.key{font-weight:800}
+.complete{padding:30px;text-align:center;border-radius:18px;background:white}
+@media(max-width:750px){.opts,.options4{grid-template-columns:1fr}.items{grid-template-columns:repeat(2,1fr)}.zones,.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="header">
+  <div class="headerTop">
+    <div><h1>🎮 Interface Technician — 5 Stage Challenge</h1>
+    <div class="sub">เกมรวม 5 รูปแบบ • ผ่านทีละด่านเพื่อปลดล็อกภารกิจถัดไป</div></div>
+    <div class="pill" id="overall">ด่าน 1 / 5</div>
+  </div>
+  <div class="stageDots">
+    <div class="dot active" id="d1"></div><div class="dot" id="d2"></div><div class="dot" id="d3"></div><div class="dot" id="d4"></div><div class="dot" id="d5"></div>
+  </div>
+  <div class="stats">
+    <span class="pill">🏆 คะแนนรวม: <b id="totalScore">0</b></span>
+    <span class="pill">🔓 ผ่านแล้ว: <b id="passed">0</b>/5</span>
+  </div>
+</header>
+
+<main class="content">
+<section id="menu">
+  <div class="center">
+    <div class="big">🖥️⚡</div>
+    <h2>Interface Technician Challenge</h2>
+    <p class="story">เลือกเล่นเกมที่ต้องการได้ทันที ทั้ง 5 รูปแบบอยู่ในหน้านี้</p>
+  </div>
+  <div class="card">
+    <h3>📋 ด่านทั้งหมด</h3>
+    <ol>
+      <li><b>Quiz Challenge</b> — ท้าทายแบบทดสอบ</li>
+      <li><b>Matching & Classification</b> — จับคู่และจำแนกประเภท</li>
+      <li><b>Branching Scenario</b> — สถานการณ์แตกแขนง</li>
+      <li><b>Mission / Escape</b> — ภารกิจหลบหนี</li>
+      <li><b>Simulation Decision</b> — ตัดสินใจจำลองสถานการณ์</li>
+    </ol>
+    <p>⭐ <b>กติกาหลัก:</b> ถ้าไม่ผ่านด่าน จะยังไปด่านต่อไปไม่ได้ แต่สามารถเล่นด่านเดิมใหม่ได้</p>
+    <div class="options4" style="margin-top:15px">
+<button class="btn primary" onclick="startStage(1)">🎯 เล่นเกม 1 — Quiz</button>
+<button class="btn primary" onclick="startStage(2)">🧪 เล่นเกม 2 — Matching</button>
+<button class="btn primary" onclick="startStage(3)">🔧 เล่นเกม 3 — Branching</button>
+<button class="btn primary" onclick="startStage(4)">🚪 เล่นเกม 4 — Mission</button>
+<button class="btn primary" onclick="startStage(5)">🛠️ เล่นเกม 5 — Simulation</button>
+</div>
+  </div>
+</section>
+
+<section id="stageArea" class="hidden"></section>
+</main>
+</div>
+
+<script>
+/* ===== SOURCE-DERIVED GAME DATA ===== */
+const quizData = [
+{q:'Interface มีหน้าที่สำคัญอย่างไร?',o:['ก. เพิ่มพื้นที่จัดเก็บ','ข. เป็นตัวกลางเชื่อมต่อและสื่อสาร','ค. แทนหน่วยความจำ','ง. แสดงผลเท่านั้น'],a:1,g:'ถูกต้อง! Interface ทำหน้าที่เป็นตัวกลางในการเชื่อมต่อและสื่อสารระหว่างคอมพิวเตอร์หรือ Controller กับอุปกรณ์ภายนอก',h:'ทบทวนเรื่องความหมายและหน้าที่ของ Interface'},
+{q:'อุปกรณ์ใดเป็น Input Device?',o:['ก. LED','ข. Relay','ค. Switch','ง. Motor'],a:2,g:'ถูกต้อง! Switch เป็น Input Device เพราะส่งข้อมูลหรือสถานะเข้าสู่ระบบ',h:'Input คืออุปกรณ์ที่ส่งข้อมูลเข้าสู่ระบบ เช่น Switch และ Sensor'},
+{q:'อุปกรณ์ใดเป็น Output Device?',o:['ก. Sensor','ข. Switch','ค. Button','ง. LED'],a:3,g:'ถูกต้อง! LED เป็น Output Device เพราะรับคำสั่งแล้วแสดงผลเป็นแสง',h:'Output คืออุปกรณ์ที่รับคำสั่งเพื่อแสดงผลหรือทำงาน เช่น LED, Relay และ Motor'},
+{q:'ลำดับการทำงานของระบบ Interface ที่ถูกต้องคือข้อใด?',o:['ก. Output → Computer → Input','ข. Input → Interface → Computer/Controller → Interface → Output','ค. Computer → Input → Output','ง. Interface → Input → Computer'],a:1,g:'เยี่ยมมาก! ระบบเริ่มจาก Input → Interface → Computer/Controller → Interface → Output',h:'คิดตามเส้นทางข้อมูล: รับข้อมูล → ประมวลผล → ส่งผลลัพธ์'},
+{q:'ถ้ากด Switch แล้วต้องการให้ LED ติด อุปกรณ์ใดทำหน้าที่รับข้อมูล?',o:['ก. LED','ข. Switch','ค. Motor','ง. Relay'],a:1,g:'ถูกต้อง! Switch เป็น Input รับการกด จากนั้น Controller สั่ง LED ซึ่งเป็น Output',h:'อุปกรณ์ใดรับคำสั่งจากผู้ใช้ก่อนส่งข้อมูลเข้าสู่ระบบ?'},
+{q:'ข้อใดเป็นตัวอย่างของอุปกรณ์ Input?',o:['ก. Temperature Sensor','ข. LED','ค. Relay','ง. DC Motor'],a:0,g:'ถูกต้อง! Temperature Sensor ทำหน้าที่รับข้อมูลอุณหภูมิจากสภาพแวดล้อม',h:'Sensor ทำหน้าที่รับข้อมูลจากสภาพแวดล้อมเข้าสู่ระบบ'},
+{q:'ข้อใดเป็นตัวอย่างของอุปกรณ์ Output ที่ใช้แสดงผลด้วยแสง?',o:['ก. Switch','ข. Button','ค. LED','ง. Temperature Sensor'],a:2,g:'ถูกต้อง! LED ใช้แสดงผลด้วยแสงตามคำสั่งของระบบ',h:'อุปกรณ์ใดแสดงผลออกมาเป็นแสง?'},
+{q:'Relay ในระบบ Interface จัดอยู่ในกลุ่มใด?',o:['ก. Input','ข. Output','ค. Storage','ง. Memory'],a:1,g:'ถูกต้อง! Relay เป็น Output ที่ใช้ส่งคำสั่งไปควบคุมอุปกรณ์ภายนอก',h:'Relay ทำงานตามคำสั่งของระบบ จึงจัดเป็น Output'},
+{q:'DC Motor มีหน้าที่หลักอย่างไรในระบบ Interface?',o:['ก. รับข้อมูลอุณหภูมิ','ข. รับการกดปุ่ม','ค. แสดงผลเป็นข้อความ','ง. ทำงานให้เกิดการเคลื่อนไหวตามคำสั่ง'],a:3,g:'ถูกต้อง! DC Motor เป็น Output ที่ทำงานให้เกิดการเคลื่อนไหวตามคำสั่ง',h:'Motor รับคำสั่งจากระบบแล้วเปลี่ยนเป็นการเคลื่อนไหว'},
+{q:'ข้อใดอธิบายความสัมพันธ์ระหว่าง Input และ Output ได้ถูกต้อง?',o:['ก. Input รับข้อมูล ส่วน Output แสดงผลหรือทำงานตามคำสั่ง','ข. Input และ Output ทำหน้าที่เหมือนกัน','ค. Output ต้องรับข้อมูลจากผู้ใช้เสมอ','ง. Input ใช้แสดงผลเท่านั้น'],a:0,g:'ถูกต้อง! Input รับข้อมูลเข้าสู่ระบบ ส่วน Output แสดงผลหรือทำงานตามคำสั่ง',h:'จำหลักง่าย ๆ: Input = รับเข้า, Output = ส่งออก/ทำงาน'}
+]
+const round1 = [
+  ["Switch","Input","อุปกรณ์รับคำสั่งจากผู้ใช้ เช่น การเปิดหรือปิดวงจร"],
+  ["Temperature Sensor","Input","เซนเซอร์รับข้อมูลอุณหภูมิจากสภาพแวดล้อม"],
+  ["Button","Input","ปุ่มกดเป็นอุปกรณ์รับคำสั่งจากผู้ใช้"],
+  ["LED","Output","LED แสดงผลด้วยแสงตามคำสั่งของระบบ"],
+  ["Relay","Output","รีเลย์เป็นอุปกรณ์ส่งคำสั่งไปควบคุมอุปกรณ์ภายนอก"],
+  ["DC Motor","Output","มอเตอร์ทำงานเพื่อให้เกิดการเคลื่อนไหวตามคำสั่ง"]
+];
+const round2 = [
+  ["Switch","รับคำสั่งจากผู้ใช้"],["Temperature Sensor","รับข้อมูลจากสภาพแวดล้อม"],
+  ["Button","รับคำสั่งจากผู้ใช้"],["LED","แสดงผล"],["Relay","ควบคุมอุปกรณ์"],["DC Motor","ทำงานตามคำสั่ง"]
+];
+const branchSteps = [
+  {
+    q: "เลือกอุปกรณ์ Input สำหรับระบบนี้",
+    desc: "Input คืออุปกรณ์ที่ส่งข้อมูลหรือคำสั่งเข้าสู่ระบบ เพื่อบอก Controller ว่าผู้ใช้ได้สั่งงานแล้ว",
+    eq: ["Switch","LED","Computer / Controller","Interface","Communication Port"],
+    options: ["LED","Switch","Computer","Relay"],
+    correct: 1,
+    consequence: "LED เป็นอุปกรณ์แสดงผล จึงทำหน้าที่ Output ไม่ใช่ตัวรับคำสั่งจากผู้ใช้",
+    hint: "Hint: ลองคิดว่าอุปกรณ์ใดเป็นตัวที่ผู้ใช้ “กด” เพื่อส่งคำสั่งเข้าสู่ระบบ"
+  },
+  {
+    q: "เลือกลำดับการทำงานของระบบที่ถูกต้อง",
+    desc: "เมื่อผู้ใช้กด Switch สัญญาณต้องเดินทางผ่าน Interface ไปยัง Controller แล้วจึงส่งคำสั่งกลับไปยัง LED",
+    eq: ["Switch","Interface","Computer / Controller","Interface","LED"],
+    options: [
+      "LED → Switch → Computer",
+      "Switch → Interface → Computer/Controller → Interface → LED",
+      "Computer → LED → Switch",
+      "Interface → LED → Switch"
+    ],
+    correct: 1,
+    consequence: "ลำดับนี้ไม่ทำให้คำสั่งจาก Switch เดินทางไปยัง Controller และส่งผลกลับไปควบคุม LED อย่างถูกต้อง",
+    hint: "Hint: เริ่มจาก Input → Interface → Controller → Interface → Output"
+  },
+  {
+    q: "ถ้ากด Switch แล้ว LED ไม่ติด ควรตรวจสอบอะไรก่อน?",
+    desc: "ช่างควรตรวจสอบสาเหตุพื้นฐานของการเชื่อมต่อก่อนเปลี่ยนอุปกรณ์หรือปิดระบบ",
+    eq: ["Switch","LED","สายสัญญาณ","ขั้วต่อ","Interface"],
+    options: ["เปลี่ยน LED ทันที","ตรวจสายและขั้วต่อ","ปิดคอมพิวเตอร์","เปลี่ยน Motor"],
+    correct: 1,
+    consequence: "การเปลี่ยนอุปกรณ์ทันทีอาจทำให้แก้ปัญหาไม่ตรงจุด ควรตรวจการเชื่อมต่อพื้นฐานก่อน",
+    hint: "Hint: ตรวจสิ่งที่ง่ายและเกี่ยวข้องกับเส้นทางสัญญาณก่อน เช่น สายและขั้วต่อ"
+  }
+];
+const escapeData = {
+1:{
+title:"MISSION 1 — IDENTIFY",
+text:"🔍 หา Input Device จำนวน 2 ชิ้นจากอุปกรณ์ต่อไปนี้",
+options:[
+["🔘 Switch","input"],
+["💡 LED","wrong"],
+["🌡️ Temperature Sensor","input"],
+["⚙️ DC Motor","wrong"]
+]},
+2:{
+title:"MISSION 2 — CONNECT",
+text:"🔗 เรียงลำดับระบบให้ถูกต้อง",
+options:[
+["A. Input → Interface → Computer/Controller → Interface → Output","correct"],
+["B. Output → Interface → Input → Computer/Controller → Interface","wrong"],
+["C. Computer/Controller → Input → Output → Interface → Interface","wrong"],
+["D. Interface → Output → Computer/Controller → Input → Interface","wrong"]
+]},
+3:{
+title:"MISSION 3 — REPAIR",
+text:"🛠️ Computer มองไม่เห็นอุปกรณ์ คุณควรทำอะไรเป็นอันดับแรก?",
+options:[
+["1. 🔌 ตรวจสอบ Interface / Port","correct"],
+["2. 💡 เปลี่ยน LED","wrong"],
+["3. ⚙️ เปลี่ยน Motor","wrong"],
+["4. 🌡️ เพิ่ม Sensor","wrong"]
+]},
+4:{
+title:"FINAL MISSION — ESCAPE",
+text:"🚪 เลือกการเชื่อมต่อที่ถูกต้องเพื่อปลดล็อกประตู",
+options:[
+["A. Switch → Interface → Computer/Controller → Interface → LED","final"],
+["B. LED → Interface → Computer/Controller → Interface → Switch","wrong"],
+["C. Switch → Computer/Controller → LED → Interface","wrong"],
+["D. Interface → Switch → LED → Computer/Controller","wrong"]
+]}
+};
+const simData = {
+1:{
+ title:"🔎 ขั้นที่ 1 — เลือกสิ่งที่จะตรวจ",
+ scenario:`<b>อาการ:</b> ระบบกดปุ่มแล้ว LED ไม่ติด<br>
+<b>ข้อมูล:</b> Computer เปิดอยู่ • Program ทำงาน • Switch สามารถกดได้ • LED ไม่ติด • สายบางจุดอาจต่อผิด`,
+ options:[
+ ["A. ตรวจสอบสายและขั้วต่อ",true,"ถูกต้อง! เมื่อ Computer และ Program ทำงาน แต่ LED ไม่ติด ควรเริ่มจากจุดเชื่อมต่อที่อาจต่อผิด"],
+ ["B. เปลี่ยน Computer",false,"เปลี่ยนอุปกรณ์หลักทั้งที่ Computer เปิดและ Program ทำงานอยู่ ทำให้เสียเวลาโดยไม่จำเป็น"],
+ ["C. เปลี่ยน Mouse",false,"Mouse ไม่เกี่ยวข้องกับเส้นทางการควบคุม LED ในสถานการณ์นี้"],
+ ["D. เพิ่ม Memory",false,"Memory ไม่ใช่จุดต้องสงสัยหลัก เพราะ Program กำลังทำงานตามปกติ"]
+ ]},
+2:{
+ title:"🔧 ขั้นที่ 2 — แก้ปัญหาการเชื่อมต่อ",
+ scenario:`ผลการตรวจสอบพบว่า <b>สาย LED ต่อผิดขั้ว</b><br>คุณควรทำอะไรต่อเพื่อแก้ปัญหา?`,
+ options:[
+ ["A. เปลี่ยน Motor",false,"Motor ไม่ใช่อุปกรณ์ที่พบปัญหา"],
+ ["B. แก้การเชื่อมต่อ",true,"ถูกต้อง! เมื่อพบว่าสาย LED ต่อผิดขั้ว ควรแก้การเชื่อมต่อให้ถูกต้อง"],
+ ["C. ปิดโปรแกรม",false,"การปิด Program ไม่ได้แก้ปัญหาการต่อสายผิดขั้ว"],
+ ["D. เปลี่ยน Keyboard",false,"Keyboard ไม่เกี่ยวข้องกับปัญหาที่พบ"]
+ ]},
+3:{
+ title:"🧪 ขั้นที่ 3 — ตรวจสอบต่อหลังแก้สาย",
+ scenario:`หลังแก้การเชื่อมต่อแล้ว <b>LED ยังไม่ติด</b><br>คุณควรวิเคราะห์อะไรต่อ?`,
+ options:[
+ ["A. ตรวจสอบวงจรและโปรแกรม",true,"ถูกต้อง! เมื่อการเชื่อมต่อถูกแล้ว ต้องตรวจสอบทั้งวงจรและโปรแกรมเพื่อหาสาเหตุที่เหลือ"],
+ ["B. เปลี่ยน Sensor",false,"ยังไม่มีหลักฐานว่า Sensor เป็นสาเหตุ"],
+ ["C. เปลี่ยน Switch",false,"Switch สามารถกดได้ จึงยังไม่มีเหตุผลให้เปลี่ยนทันที"],
+ ["D. ถอด Computer",false,"Computer และ Program ทำงานอยู่ การถอดออกไม่ใช่ขั้นตอนที่เหมาะสม"]
+ ]}
+};
+
+/* ===== MASTER GAME STATE ===== */
+let currentStage=0, passedStages=0, totalScore=0;
+let stageScore=[0,0,0,0,0];
+
+function updateHeader(){
+  document.getElementById('overall').textContent=currentStage?`ด่าน ${currentStage} / 5`:'พร้อมเริ่ม';
+  document.getElementById('totalScore').textContent=totalScore;
+  document.getElementById('passed').textContent=passedStages;
+  for(let i=1;i<=5;i++){
+    const el=document.getElementById('d'+i);
+    el.className='dot'+(i<=passedStages?' done':i===currentStage?' active':'');
+  }
+}
+function startStage(n){
+  currentStage=n; updateHeader();
+  document.getElementById('menu').classList.add('hidden');
+  document.getElementById('stageArea').classList.remove('hidden');
+  if(n===1) renderStage1();
+  if(n===2) renderStage2();
+  if(n===3) renderStage3();
+  if(n===4) renderStage4();
+  if(n===5) renderStage5();
+  document.getElementById('stageArea').insertAdjacentHTML('afterbegin',
+    '<button class="btn dark" style="margin-bottom:12px" onclick="showMenu()">🏠 กลับหน้าเลือกเกม</button>');
+}
+function showMenu(){
+  document.getElementById('stageArea').classList.add('hidden');
+  document.getElementById('menu').classList.remove('hidden');
+  currentStage=0; updateHeader();
+}
+function failStage(msg){
+  document.getElementById('stageArea').innerHTML=`
+    <div class="complete">
+      <div class="big">🔒</div><h2>ยังไม่ผ่านด่าน ${currentStage}</h2>
+      <p class="story">${msg||'ทบทวนเนื้อหาแล้วลองด่านนี้อีกครั้ง'}</p>
+      <button class="btn primary" onclick="startStage(${currentStage})">🔁 เล่นด่าน ${currentStage} ใหม่</button>
+    </div>`;
+}
+function passStage(points){
+  if(!stageScore[currentStage-1]){
+    stageScore[currentStage-1]=points;
+    totalScore+=points; passedStages++;
+  }
+  updateHeader();
+  if(currentStage<5){
+    document.getElementById('stageArea').innerHTML=`
+      <div class="complete">
+        <div class="big">🔓✨</div><h2>ผ่านด่าน ${currentStage} แล้ว!</h2>
+        <p>คะแนนด่าน: <b>${points}</b></p>
+        <p>ด่านถัดไปถูกปลดล็อกแล้ว</p>
+        <button class="btn primary" onclick="startStage(${currentStage+1})">➡️ ไปด่าน ${currentStage+1}</button>
+      </div>`;
+  }else{
+    document.getElementById('stageArea').innerHTML=`
+      <div class="complete">
+        <div class="big">🏆🎉</div><h2>INTERFACE TECHNICIAN MASTER!</h2>
+        <p>คุณผ่านครบทั้ง 5 ด่าน</p>
+        <h2>${totalScore} คะแนน</h2>
+        <p>ด่าน 1: ${stageScore[0]} • ด่าน 2: ${stageScore[1]} • ด่าน 3: ${stageScore[2]} • ด่าน 4: ${stageScore[3]} • ด่าน 5: ${stageScore[4]}</p>
+        <button class="btn primary" onclick="location.reload()">🔄 เริ่มเกมใหม่ทั้งหมด</button>
+      </div>`;
+  }
+}
+
+/* ===== STAGE 1: QUIZ ===== */
+let qIndex=0,qScore=0,qHearts=3;
+function renderStage1(){
+  qIndex=0;qScore=0;qHearts=3;
+  document.getElementById('stageArea').innerHTML=`
+    <div class="card">
+      <span class="stageTag">ด่าน 1 / 5 — Quiz Challenge</span>
+      <h2>🎯 เกมท้าทายแบบทดสอบ</h2>
+      <p>ตอบถูกอย่างน้อย 8/10 จึงจะผ่านด่าน</p>
+      <div class="progress"><div class="bar" id="qbar"></div></div>
+      <div id="qbox"></div>
+    </div>`;
+  renderQuestion();
+}
+function renderQuestion(){
+  const d=quizData[qIndex];
+  document.getElementById('qbar').style.width=((qIndex+1)/quizData.length*100)+'%';
+  document.getElementById('qbox').innerHTML=`
+    <div class="pill">❤️ ${qHearts} &nbsp; | &nbsp; คะแนน ${qScore}/${quizData.length}</div>
+    <div class="q">${d.q}</div>
+    <div class="opts">${d.o.map((x,j)=>`<button class="opt" onclick="answerQ(${j})">${x}</button>`).join('')}</div>
+    <div id="qfb"></div>`;
+}
+function answerQ(j){
+  const d=quizData[qIndex], buttons=[...document.querySelectorAll('#qbox .opt')],ok=j===d.a;
+  buttons.forEach(b=>b.disabled=true);
+  if(ok){qScore++;buttons[j].classList.add('correct')}
+  else{qHearts--;buttons[j].classList.add('wrong');buttons[d.a].classList.add('correct')}
+  document.getElementById('qfb').innerHTML=`<div class="feedback ${ok?'good':'bad'}"><b>${ok?'🎉 ตอบถูก!':'💡 ตอบไม่ถูก'}</b><br>${ok?d.g:d.h}<br>
+    <button class="btn primary" style="margin-top:10px" onclick="${qIndex===quizData.length-1||qHearts<=0?'finishQ()':'nextQ()'}">${qIndex===quizData.length-1||qHearts<=0?'ดูผลลัพธ์':'➡️ ข้อต่อไป'}</button></div>`;
+}
+function nextQ(){qIndex++;renderQuestion()}
+function finishQ(){
+  if(qScore>=8 && qHearts>0) passStage(qScore*10);
+  else failStage(`ต้องได้อย่างน้อย 8/10 คะแนนจึงผ่านด่านนี้ • คุณได้ ${qScore}/10`);
+}
+
+/* ===== STAGE 2: MATCHING & CLASSIFICATION ===== */
+let r=1, placed=new Set(), matchScore=0;
+const icons={Switch:"🔘","Temperature Sensor":"🌡️",Button:"🔲",LED:"💡",Relay:"🔌","DC Motor":"⚙️",Sensor:"🌡️",Motor:"⚙️"};
+function renderStage2(){
+  r=1;placed=new Set();matchScore=0;
+  document.getElementById('stageArea').innerHTML=`<div class="card">
+    <span class="stageTag">ด่าน 2 / 5 — Matching & Classification</span>
+    <h2>🧪 Interface Sorting Lab</h2><div id="matchGame"></div></div>`;
+  renderMatch();
+}
+function renderMatch(){
+ const g=document.getElementById('matchGame');
+ if(r===1){
+  g.innerHTML=`<div class="instruction"><b>ลากอุปกรณ์ไปยัง INPUT หรือ OUTPUT</b></div>
+  <div class="items">${round1.map((x,i)=>`<div class="item" draggable="true" data-i="${i}"><span class="icon">${icons[x[0]]||'🧩'}</span>${x[0]}</div>`).join('')}</div>
+  <div class="zones"><section class="zone" data-zone="Input"><h3>📥 INPUT</h3><p>รับคำสั่งหรือข้อมูลเข้าสู่ระบบ</p><div class="drop-list" id="Input"></div></section>
+  <section class="zone" data-zone="Output"><h3>📤 OUTPUT</h3><p>แสดงผลหรือทำงานตามคำสั่ง</p><div class="drop-list" id="Output"></div></section></div>`;
+ }else{
+  g.innerHTML=`<div class="instruction"><b>ลากอุปกรณ์ไปยัง “หน้าที่” ที่ตรงกัน</b></div>
+  <div class="items">${round2.map((x,i)=>`<div class="item" draggable="true" data-i="${i}"><span class="icon">${icons[x[0]]||'🧩'}</span>${x[0]}</div>`).join('')}</div>
+  <div class="zones" style="grid-template-columns:repeat(3,1fr)">${["รับคำสั่งจากผู้ใช้","รับข้อมูลจากสภาพแวดล้อม","แสดงผล","ควบคุมอุปกรณ์","ทำงานตามคำสั่ง"].map(z=>`<section class="zone" data-zone="${z}"><h3>🧩</h3><p>${z}</p><div class="drop-list" id="z${encodeURIComponent(z)}"></div></section>`).join('')}</div>`;
+ }
+ setupDragMatch();
+}
+function setupDragMatch(){
+ document.querySelectorAll('#matchGame .item').forEach(el=>el.addEventListener('dragstart',e=>e.dataTransfer.setData('text/plain',el.dataset.i)));
+ document.querySelectorAll('#matchGame .zone').forEach(z=>{
+  z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('over')});
+  z.addEventListener('dragleave',()=>z.classList.remove('over'));
+  z.addEventListener('drop',e=>{e.preventDefault();z.classList.remove('over');checkMatch(+e.dataTransfer.getData('text/plain'),z.dataset.zone)});
+ });
+}
+function checkMatch(i,zone){
+ if(placed.has(i))return;
+ const correct=r===1?round1[i][1]===zone:round2[i][1]===zone;
+ if(correct){
+  placed.add(i);matchScore++;
+  const name=r===1?round1[i][0]:round2[i][0];
+  const target=r===1?document.getElementById(zone):document.getElementById('z'+encodeURIComponent(zone));
+  target.innerHTML+=`<span class="chip">${icons[name]||'🧩'} ${name}</span>`;
+  document.querySelectorAll('#matchGame .item').forEach((el,j)=>{if(j===i){el.classList.add('locked');el.draggable=false}});
+  if(placed.size===6){
+    if(r===1){r=2;placed=new Set();setTimeout(renderMatch,350)}
+    else passStage(100);
+  }
+ }else{
+  const old=document.getElementById('matchGame').querySelector('.feedback');
+  if(old)old.remove();
+  const fb=document.createElement('div');fb.className='feedback bad';fb.textContent='❌ ยังไม่ถูก ลองใหม่ — คิดถึงหน้าที่หลักของอุปกรณ์';document.getElementById('matchGame').appendChild(fb);
+ }
+}
+
+/* ===== STAGE 3: BRANCHING SCENARIO ===== */
+let b=0, evidence=[];
+function renderStage3(){
+ b=0;evidence=[];
+ document.getElementById('stageArea').innerHTML=`<div class="grid2">
+ <main class="card"><span class="stageTag">ด่าน 3 / 5 — Branching Scenario</span><h2>🔧 Interface Technician</h2>
+ <div id="branchBox"></div></main>
+ <aside class="evidence"><h3>📋 Learning Evidence</h3><div class="log" id="blog">ยังไม่มีการตัดสินใจ</div></aside></div>`;
+ renderBranch();
+}
+function renderBranch(){
+ const s=branchSteps[b];
+ document.getElementById('branchBox').innerHTML=`<span class="stageTag">จุดตัดสินใจที่ ${b+1}</span>
+ <h2>${s.q}</h2><p>${s.desc}</p><div class="equipment">${s.eq.map(x=>`<span class="equip">${x}</span>`).join('')}</div>
+ <div class="options4">${s.options.map((x,i)=>`<button class="choice" onclick="chooseBranch(${i})">${String.fromCharCode(65+i)}. ${x}</button>`).join('')}</div><div id="bfb"></div>`;
+ document.getElementById('blog').innerHTML=evidence.length?evidence.map(x=>`<div>${x}</div>`).join(''):'ยังไม่มีการตัดสินใจ';
+}
+function chooseBranch(i){
+ const s=branchSteps[b], buttons=[...document.querySelectorAll('#branchBox .choice')];
+ if(i===s.correct){
+  buttons[i].classList.add('correct');
+  evidence.push(`จุดที่ ${b+1}: เลือก “${s.options[i]}” ✓`);
+  document.getElementById('bfb').innerHTML=`<div class="feedback good">✅ <b>ถูกต้อง!</b> เลือกเส้นทางที่เหมาะสม<br><button class="btn primary" onclick="nextBranch()">ไปต่อ →</button></div>`;
+  document.getElementById('blog').innerHTML=evidence.map(x=>`<div>${x}</div>`).join('');
+ }else{
+  buttons[i].classList.add('wrong');
+  document.getElementById('bfb').innerHTML=`<div class="feedback bad">❌ <b>ยังไม่ถูกต้อง</b><br>${s.consequence}<br>💡 ${s.hint}<br><button class="btn primary" onclick="renderBranch()">ลองใหม่</button></div>`;
+ }
+}
+function nextBranch(){if(b<2){b++;renderBranch()}else passStage(100)}
+
+/* ===== STAGE 4: MISSION / ESCAPE ===== */
+let mission=1, escScore=0, hasKey1=false,hasKey2=false;
+function renderStage4(){
+ mission=1;escScore=0;hasKey1=false;hasKey2=false;renderEscape();
+}
+function renderEscape(){
+ const d=escapeData[mission];
+ document.getElementById('stageArea').innerHTML=`<div class="card">
+ <span class="stageTag">ด่าน 4 / 5 — Mission / Escape</span>
+ <h2>🧪 Escape from the Broken Lab</h2>
+ <p class="story">🔑 Key Card 1: ${hasKey1?'✅':'🔒'} &nbsp; Key Card 2: ${hasKey2?'✅':'🔒'} &nbsp; คะแนน: ${escScore}/100</p>
+ <div class="progress"><div class="bar" style="width:${(mission-1)/4*100}%"></div></div>
+ <div class="scenario" style="color:#d4deea;background:#0d1b2a"><b>${d.title}</b><br>${d.text}</div>
+ <div class="options4" style="margin-top:15px">${d.options.map((x,i)=>`<button class="option" onclick="answerEscape('${x[1]}',this)">${x[0]}</button>`).join('')}</div>
+ <div id="efb"></div></div>`;
+}
+function answerEscape(type,btn){
+ if(mission===1){
+  if(type==='input'){
+   btn.disabled=true;btn.classList.add('correct');
+   const found=document.querySelectorAll('.option.correct').length;
+   if(found===2){escScore=20;hasKey1=true;setTimeout(()=>{mission=2;renderEscape()},500)}
+   else document.getElementById('efb').innerHTML='<div class="feedback good">✅ พบ Input แล้ว 1 ชิ้น — หาอีก 1 ชิ้น</div>';
+  }else wrongEscape('❌ อุปกรณ์นี้ไม่ใช่ Input Device ลองใหม่');
+ }else if(mission===2){
+  if(type==='correct'){escScore=50;hasKey2=true;setTimeout(()=>{mission=3;renderEscape()},500)}
+  else wrongEscape('❌ ลำดับยังไม่ถูกต้อง ลองวิเคราะห์เส้นทาง Input → Interface → Controller → Interface → Output');
+ }else if(mission===3){
+  if(type==='correct'){escScore=70;setTimeout(()=>{mission=4;renderEscape()},500)}
+  else wrongEscape('❌ ควรตรวจสอบ Interface / Port ก่อน');
+ }else{
+  if(type==='final'){escScore=100;passStage(100)}
+  else wrongEscape('❌ ยังไม่ใช่การเชื่อมต่อที่ถูกต้อง');
+ }
+}
+function wrongEscape(t){document.getElementById('efb').innerHTML=`<div class="feedback bad">${t}</div>`}
+
+/* ===== STAGE 5: SIMULATION DECISION ===== */
+let simStep=1,credits=3;
+function renderStage5(){
+ simStep=1;credits=3;renderSim();
+}
+function renderSim(){
+ const d=simData[simStep];
+ document.getElementById('stageArea').innerHTML=`<div class="card">
+ <span class="stageTag">ด่าน 5 / 5 — Simulation Decision</span>
+ <h2>🔧 Interface Technician Simulator</h2>
+ <div class="pill">ขั้นที่ ${simStep}/3 &nbsp; • &nbsp; 💳 เครดิต: ${credits}</div>
+ <div class="scenario" style="margin-top:15px">${d.title}<br>${d.scenario}</div>
+ <div class="options4" style="margin-top:15px">${d.options.map((o,i)=>`<button class="option" onclick="answerSim(${i})">${o[0]}</button>`).join('')}</div>
+ <div id="sfb"></div></div>`;
+}
+function answerSim(i){
+ const d=simData[simStep],o=d.options[i],fb=document.getElementById('sfb');
+ if(o[1]){
+  fb.innerHTML=`<div class="feedback good">✅ <b>ตัดสินใจถูกต้อง</b><br>${o[2]}<br><button class="btn primary" onclick="${simStep<3?'nextSim()':'finishSim()'}">${simStep<3?'ไปขั้นถัดไป →':'ทดสอบระบบ →'}</button></div>`;
+ }else{
+  credits--;fb.innerHTML=`<div class="feedback bad">❌ <b>ตัดสินใจไม่ตรงจุด</b><br>${o[2]}<br>📉 เสีย 1 เครดิต<br>💡 จากข้อมูลที่มี ให้เลือกสิ่งที่เกี่ยวข้องโดยตรงกับอาการ<br><button class="btn primary" onclick="${credits>0?'renderSim()':'failStage(\'เครดิตหมด — ต้องวิเคราะห์ข้อมูลของสถานการณ์ให้ตรงจุด\')'}">${credits>0?'วิเคราะห์ใหม่ ↻':'กลับไปเริ่มด่าน'}</button></div>`;
+ }
+}
+function nextSim(){simStep++;renderSim()}
+function finishSim(){passStage(100)}
+
+updateHeader();
+</script>
+</body>
+</html>
